@@ -1,0 +1,143 @@
+---
+title: "ML Master with R"
+output: html_notebook
+---
+
+Chapter 5
+
+Loading in datasets:
+
+
+*Iris Data*
+
+- Description: Predict iris flower species from flower measurements.   
+- Type: Multiclass classification.
+- Dimensions: 150 instances, 5 attributes.
+- Inputs: Numeric.
+- Output: Categorical, 3 class labels.
+
+```{r}
+data(iris)
+head(iris)
+```
+
+*Longley's Economic Regression Data*
+
+- Description: Predict number of people employed from economic variables.   
+- Type: Regression.
+- Dimensions: 16 instances, 7 attributes.
+- Inputs: Numeric.
+- Output: Numeric.
+
+```{r}
+data(longley)
+head(longley)
+```
+
+*mlbench Package*
+```{r}
+install.packages("mlbench")
+library(mlbench)
+```
+
+*Boston Housing Data*
+
+- Description: Predict the median house price in 1000 for suburbs in Boston.   
+- Type: Regression.
+- Dimensions: 506 instances, 14 attributes.
+- Inputs: Numeric.
+- Output: Numeric.
+
+```{r}
+data("BostonHousing")
+head(BostonHousing)
+```
+
+*Wisconsin Breast Cancer Database*
+
+- Description: Predict whether a tissue sample is malignant or benign given properties about the tissue sample.
+- Type: Binary Classification.
+- Dimensions: 699 instances, 11 attributes.
+- Inputs: Integer (Nominal).
+- Output: Categorical, 2 class labels.
+
+```{r}
+data("BreastCancer")
+head(BreastCancer)
+```
+
+*Glass Identification Database*
+
+- Description: Predict the glass type from chemical properties.   
+- Type: Regression.
+- Dimensions: 214 instances, 10 attributes.
+- Inputs: Numeric.
+- Output: Categorical, 7 class labels.
+
+```{r}
+data("Glass")
+head(Glass)
+```
+
+*Johns Hopkins University Ionosphere database*
+
+- Description: Predict high-energy structures in the atmosphere from antenna data.   
+- Type: Regression.
+- Dimensions: 351 instances, 35 attributes.
+- Inputs: Numeric.
+- Output: Categorical, 2 class labels.
+
+```{r}
+data("Ionosphere")
+head(Ionosphere)
+```
+
+*Pima Indians Diabetes Database*
+
+- Description: Predict the onset of diabetes in female Pima Indians from medical record data.
+- Type: Binary Classification.
+- Dimensions: 768 instances, 9 attributes.
+- Inputs: Numeric.
+- Output: Categorical, 2 class labels.
+
+```{r}
+data("PimaIndiansDiabetes")
+head(PimaIndiansDiabetes)
+```
+
+*Sonar, Mines, vs. Rocks Dataset*
+
+- Description: Predict metal or rock returns from sonar return data.
+- Type: Binary Classification.
+- Dimensions: 208 instances, 61 attributes.
+- Inputs: Numeric.
+- Output: Categorical, 2 class labels.
+
+```{r}
+data("Sonar")
+head(Sonar)
+```
+
+*Soybean Database*
+
+- Description: Predict problems with soybean crops from crop data.
+- Type: Multiclass Classification.
+- Dimensions: 683 instances, 26 attributes.
+- Inputs: Integer (Nominal).
+- Output: Categorical, 19 class labels.
+
+```{r}
+data("Soybean")
+head(Soybean)
+```
+
+~ Package: AppliedPredictiveModeling
+
+*Abalone Data*
+
+- Description: Predict abalone age from abalone measurement data.   
+- Type: Regression.
+- Dimensions: 4177 instances, 9 attributes.
+- Inputs: Numerical and categorical.
+- Output: Integer.
+
