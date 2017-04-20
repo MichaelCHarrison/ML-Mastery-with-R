@@ -1,0 +1,115 @@
+---
+title: "ML Mastery with R - Chapter 8"
+output: html_notebook
+---
+
+Visualizing Data
+
+*Univariate Visualization*
+
+- Histograms
+
+```{r}
+par(mfrow=c(1,4))
+for(i in 1:4){
+        hist(iris[,i], main = names(iris)[i], xlab = names(iris)[i])
+}
+```
+
+- Density Plots
+        - these are useful for a more abstract depiction of distribution of each variable
+```{r}
+library(lattice)
+par(mfrow=c(2,2))
+for(i in 1:4){
+        plot(density(iris[,i]), main=names(iris)[i])
+}
+```
+
+- Box and Whisker Plots
+        - look at the distribution of the data based on quarlitile statistics
+        - dots that site outside the whiskeys can be good candidates for outliers
+        
+```{r}
+par(mfrow=c(1,4))
+for(i in 1:4){
+        boxplot(iris[,i], main = names(iris)[i])
+}
+```
+
+- Bar plots
+        - For datasets with categorical rather than numeric attributes, bar plots can give
+        a proportion of instances that belong to each category
+        
+```{r}
+par(mfrow = c(2,4))
+for(i in 2:9){
+        counts <- table(BreastCancer[,i])
+        name <- names(BreastCancer)[i]
+        barplot(counts, main=name)
+}
+```
+
+- Missing Plot
+        - Missing data can have big impact on modeling
+        - Some techniques ignore missing data, others break
+        - You can use a missing plot to get an idea of the amount of missing data in the 
+        set; from the Amelia package
+        - X axis shows attributes, Y axis shows instances
+        - Horizontal lines indicate missing data for an instance
+        - Verical blocks represent missing ta for an attribute
+        
+```{r}
+library(Amelia)
+library(mlbench)
+data("Soybean")
+
+missmap(Soybean, col=c("black", "grey"), legend = FALSE)
+```
+
+
+*Multivariate Visualization*
+
+- Correlation Plot
+        - Calculate the correlation between each pair of numeric attributes
+```{r}
+library(corrplot)
+correlations <- cor(iris[,1:4])
+corrplot(correlations, method = "circle")
+```
+
+- Scatter Plot Matrix
+        - Plots two variables agianst each other, with points showing the interaction
+
+```{r}
+pairs(iris)
+```
+
+- Scatter plot Matrix by Class
+        - Points in scatter plot matrix can be colored by class label in classification
+        - This can help to spot clear or unclear separation of classes and give an idea
+        to the difficult of the problem
+        
+```{r}
+pairs(Species ~., data = iris, col=iris$Species)
+```
+
+- Density Plots by Class
+        - review the density distirbution of each attribute broken down by class value
+        - density can help see separation of classes
+
+```{r}
+library(caret)
+x <- iris[,1:4]
+y <- iris[,5]
+scales <- list(x = list(relation="free"), y = list(relation="free"))
+featurePlot(x, y, plot="density", scales=scales)
+```
+
+- Box and Whisker plots by Class
+        - Review boxplot distribution of attributes by class value
+        
+```{r}
+featurePlot(x, y, plot="box")
+```
+
