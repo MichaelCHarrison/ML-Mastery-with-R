@@ -1,0 +1,81 @@
+---
+title: "ML Mastery with R - Chap 11"
+output: html_notebook
+---
+
+Machine Learning Model Evaluation
+
+*Accuracy and Kappa*
+- default metrics used to evaluate algorithms on binary and multiclass classification
+- accuracy is percentage of correctly classified instances out of all instances
+- more useful on a binary classification than multiclass classification problem because it can be less clear exactly how the accuracy breaks down across thos classes
+- kappa (Cohen's Kappa) is like classification accuracy, except that it is normalized at the baseline f random chance on your dataset
+        - More useful measure to use on problems that have an imablance in the classes 
+        (e.g. 70/30 split on binary classes)
+- Example using Pima Indians Diabetes dataset; class breakdown of 65/35 for negative/positive outcomes
+
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fit <- train(diabetes ~., data=PimaIndiansDiabetes, method = "glm", metric="Accuracy")
+fit
+```
+
+*RMSE and R^2*
+- Default metrics used to evaluate algorithms on regression datasets in caret
+- RMSE is the average deviation of the predictions from the observations
+- Useful to get a gross idea of how well (or not) an algortihm is doing, in the unites of the output variable
+
+- R^2 (coefficient of determination) provides a goodnes-of-fit for the precitions to the observations
+- value is between 0 and 1 for no first and perfectly fit, respectively
+- Example using Longley economic dataset
+        - RMSE for data is .38 of the units provided by the outcome's unit
+        - R^2 shows good fit with value very close to 1 (0.989)
+        
+```{r}
+data("longley")
+fitControl <- trainControl(method="cv", number = 5)
+fit <- train(Employed ~., data=longley, method="lm", 
+             metric = "RMSE", trControl = fitControl)
+fit
+```
+
+*Area under ROC Curve*
+- ROC metrics are only suitable for binary classification problems 
+- Must change the summaryFunction in trainControl to be twoClassSummary
+        - Calculates the Area Under ROC Curve (AUROC- also referred to as AUC), 
+        sensititivy, specificity
+        - Sensitivity is the true positive rate, also called recall. It is the nuber of 
+        instances from positive (first) class and actually predicted correctly
+        - Specificty is the the negative rate. It is the number of instances from the
+        negative (second) class that were actually predicty correctly
+- ROC can be broken down into sensitivity and specificity; a binary classification problem is really a trade-off between sensitivity and specificity
+
+```{r}
+fitControl <- trainControl(method = "cv", number = 5, classProbs = TRUE,
+                           summaryFunction = twoClassSummary)
+set.seed(7)
+fit <- train(diabetes~., data=PimaIndiansDiabetes, method="glm", metric="ROC",
+             trControl = fitControl)
+fit
+```
+
+*Logarithmic Loss*
+- LogLoss is used to evalute binary classfication but is more common for multiclass classification algorithms
+- It evaluates the probabilites estimated by the algorithm
+- Exampe with iris data
+
+```{r}
+data(iris)
+fitControl <- trainControl(method="cv", number = 5, classProbs = TRUE,
+                           summaryFunction = mnLogLoss)
+set.seed(7)
+fit <- train(Species~., data=iris, method = "rpart", metric = "logLoss",
+             trControl = fitControl)
+fit
+```
+
