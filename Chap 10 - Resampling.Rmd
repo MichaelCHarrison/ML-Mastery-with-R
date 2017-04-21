@@ -1,0 +1,87 @@
+---
+title: "ML Mastery with R - Chap 10"
+output: html_notebook
+---
+
+*Resampling Methods to Estimate Model Accuracy*
+
+Five resampling methods to evaluate the accuracy of your data in R:
+
+*1 Data Split*
+
+- Involves partition the data into an explicit training dataset used to prepare the model and an unseen test data set used to evaulte the model
+- Example splitting the iris data set 80/20 training/test to train a NaiveBayes model
+
+```{r}
+library(caret)
+library(klaR)
+data(iris)
+
+inTrain <- createDataPartition(iris$Species, p=.8, list=FALSE)
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+
+#train a Naive Bayes model
+fit <- NaiveBayes(Species ~ ., data = training)
+predictions <- predict(fit, testing[,1:4])
+confusionMatrix(predictions$class, testing$Species)
+```
+
+
+*2 Bootstrap*
+- Bootstrap resampling involves taking random samples from the dataset (with re-selection) 
+- In aggregate, the results provide an indication of the variance of the model's performance
+- Typically, large number of resampling iterations are performed (1000s-10000s)
+- Example using bootstrap with 100 resamples to estimate the accuracy of NaiveBayes model:
+
+```{r}
+data(iris)
+fitControl <- trainControl(method = "boot", number = 100)
+fit <- train(Species ~., data = iris, trControl = fitControl, method = "nb")
+fit
+```
+
+*3 k-fold Cross-Validation*
+- k-fold cross-validation method involves splitting the dataset in to k-subsets; each subset is held-out while the model is trained on all other subsets
+- process is repeated until accuracy is determined for each instance in the dataset and an overall accuracy estimate is provided
+- this is a robust method for estimating accuracy, and the size of k can tune the amount of bias in the estimate; popular values set to 5 and 10
+- Example using 10-fold cross-validation to estimate the accuracy of a Naive Bayes algorithm
+
+```{r}
+data(iris)
+fitControl <- trainControl(method = "cv", number = 10)
+fit <- train(Species ~., data = iris, trControl = fitControl, method = "nb")
+fit
+```
+
+
+*4 Repeated K-fold cross Validation*
+- Process of splitting the data into k-folds repeated a number of times
+- the final model accuracy is taken as the mean from the number of repeates 
+- Example demonstrates a 10 fold cv with 3 repeates to estimate the accuracy of a Naive Bayes algorithm on the iris data set
+```{r}
+data(iris)
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+fit <- train(Species~., data=iris, trControl = fitControl, method="nb")
+fit
+```
+
+*5 Leave One Out Cross-Validation (LOOCV)*
+- data instance is left out and a model constructed on all other data instance in the training set
+- this is repeated for all data instances
+- Example of LOOCV to estimate the accuracy of the Naive Bayes algorithm
+
+```{r}
+data(iris)
+fitControl <- trainControl(method = "LOOCV")
+fit <- train(Species~., data=iris, trControl = fitControl, method = "nb")
+fit
+```
+
+*Tips for evaluating algorithms*
+- Using a data split into a training and test set is a good idea when you have a lot of data and you are confident that your training sample is representative of the larger dataset.
+- Using a data split is very efficient and is often used to get a quick estimate of model accuracy.
+- Cross-validation is a gold standard for evaluating model accuracy, often with k-folds set to 5 or 10 to balance overfitting the training data with a fair accuracy estimate.
+- Repeated k-fold cross-validation is preferred when you can afford the computational expense and require a less biased estimate.
+
+
