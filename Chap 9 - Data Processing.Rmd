@@ -1,0 +1,133 @@
+---
+title: "ML Mastery with R"
+output: html_notebook
+---
+
+Preparing Data for ML with Pre-Processing
+
+*Summary of Transform Methods*
+- BoxCox: apply a Box-Cox transform, values must be non-zero and positive.
+- YeoJohnson: apply a Yeo-Johnson transform, like a BoxCox, but values can be negative.
+- expoTrans: apply a power transform like BoxCox and YeoJohnson.
+- zv: remove attributes with a zero variance (all the same value).
+- nzv: remove attributes with a near zero variance (close to the same value).
+- center: subtract mean from values.
+- scale: divide values by standard deviation.
+- range: normalize values.
+- pca: transform data to the principal components.
+- ica: transform data to the independent components. 
+- spatialSign: project data onto a unit circle.
+
+
+
+*Scale Data*
+- Scale transform calculates the standard deviation for an attribute and divides each value by the standard deviation
+- Useful operation for scaling data with a gaussian distribution
+
+```{r}
+summary(iris[,1:4])
+```
+```{r}
+#Calculate the pre-process paramters from the dataset
+preprocessParams <- preProcess(iris[,1:4], method=c("scale"))
+preprocessParams
+```
+```{r}
+#Transform the dataset using the parameters
+transformed <- predict(preprocessParams, iris[,1:4])
+summary(transformed)
+```
+
+*Center Data*
+- center transform calculates the mean for an attribute and subtracts it from each value
+
+```{r}
+preprocessParams <- preProcess(iris[,1:4], method=c("center"))
+transformed <- predict(preprocessParams, iris[,1:4])
+summary(transformed)
+```
+
+*Standardize Data*
+- Combination of the scale and center transformation to standardize data
+- Attributes will have a mean value of 0 and a standard deviations of 1
+```{r}
+preprocessParams <- preProcess(iris[,1:4], method = c("center", "scale"))
+transformed <- predict(preprocessParams, iris[,1:4])
+summary(transformed)
+```
+
+*Normalize Data*
+- Data values can be scaled into the range of [0,1] - called normalization
+```{r}
+preprocessParams <- preProcess(iris[,1:4], method = c("range"))
+transformed <- predict(preprocessParams, iris[,1:4])
+summary(transformed)
+```
+
+
+
+*Box Cox Transform*
+- When an attribute has a gaussian-like distribution but is shifted, this is called a skew
+- The distirbtion of an atribute can be shifted to reduce the skew and make it more Gaussian
+- BoxCox transform can perform this operation(assumes all values are positive)
+- Notice in the example that the only applied transformations were to attributes with skew
+
+```{r}
+skew <- apply(PimaIndiansDiabetes[,1:8], 2, skewness)
+print(skew)
+```
+
+```{r}
+summary(PimaIndiansDiabetes[,7:8])
+```
+```{r}
+preprocessParams <- preProcess(PimaIndiansDiabetes[,7:8], method = c("BoxCox"))
+transformed <- predict(preprocessParams, PimaIndiansDiabetes[,7:8])
+summary(transformed)
+```
+
+
+
+*Yeo-Johnson Transform*
+- Like the Box-Cox but supports raw values that are equal to zero and negative
+
+```{r}
+summary(PimaIndiansDiabetes[,7:8])
+```
+```{r}
+data("PimaIndiansDiabetes")
+preprocessParams <- preProcess(PimaIndiansDiabetes[,7:8], method = c("YeoJohnson"))
+transform <- predict(preprocessParams, PimaIndiansDiabetes[,7:8])
+summary(transform)
+```
+
+
+
+*Principal Component Analysis (PCA) Transform*
+- PCA transforms the data to return only the principal compoenets, a technique from multivariate statistics and linear algebra
+- The transform keeps those compoenents above the variance threshold (default = .95) or the number to be specificed (pcaComp)
+- result are attribtues that are uncorrelated, useful for algorithsm like linear and genearlized linear regression
+
+```{r}
+data(iris)
+summary(iris)
+```
+```{r}
+preprocessParams <- preProcess(iris, method=c("center", "scale", "pca"))
+transformed <- predict(preprocessParams, iris)
+summary(transformed)
+```
+
+*Independent Component Analysis (ICA) Transform*
+
+```{r}
+data("PimaIndiansDiabetes")
+summary(PimaIndiansDiabetes[,1:8])
+```
+```{r}
+preprocessParams <- preProcess(PimaIndiansDiabetes[,1:8], 
+                               method = c("center", "scale", "ica"), n.comp=5)
+transformed <- predict(preprocessParams, PimaIndiansDiabetes[,1:8])
+summary(transformed)
+```
+
