@@ -1,0 +1,126 @@
+---
+title: "ML Mastery with R"
+output: html_notebook
+---
+
+Spot-Check Machine Learning Algorithms
+
+*Linear Algorithms*
+- Methods that make large assumptions about the form of the function being modeled
+- high bias but are often fast to train; final models often easy to interpret
+
+
+- Linear Regression; using the package and function
+```{r}
+library(mlbench)
+data("BostonHousing")
+
+fit <- lm(medv~., BostonHousing)
+fit
+```
+```{r}
+predictions <- predict(fit, BostonHousing)
+#Summarize the accuracy; mean standard error
+mse <- mean((BostonHousing$medv - predictions)^2)
+mse
+```
+
+- Linear Regression; caret
+```{r}
+library(caret)
+library(mlbench)
+data("BostonHousing")
+
+fitControl <- trainControl(method="cv", number=5)
+fitLm <- train(medv~., data = BostonHousing,
+             method = "lm", metric = "RMSE", 
+             preProcess=c("center", "scale"), trControl = fitControl)
+fitLm
+```
+
+- Logistic Regression; package and function
+        - Can be configured to perform a logistic regression suitable for binary 
+        classification problems
+        - Logistic regression is useful when predicting binary outcomes from a set of 
+        continuous predictor variables; frequently preferred over LDA
+```{r}
+data("PimaIndiansDiabetes")
+fit <- glm(diabetes ~., data=PimaIndiansDiabetes, family=binomial(link = 'logit'))
+fit
+```
+```{r}
+probabilities <- predict(fit, PimaIndiansDiabetes[,1:8], type = "response")
+predictions <- ifelse(probabilities > 0.5, 'pos', 'neg')
+#summarize accuracy of model
+table(predictions, PimaIndiansDiabetes$diabetes)
+```
+
+- Logistic Regression; caret
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+set.seed(7)
+fitControl <- trainControl(method = "cv", number = 5)
+fitGlm <- train(diabetes~., data=PimaIndiansDiabetes,
+                method = "glm", metric = "Accuracy", 
+                preProcess=c("center", "scale"), trControl = fitControl)
+fitGlm
+```
+
+- Linear Discriminant Analysis (LDA); package and function
+```{r}
+library(MASS)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fit <- lda(diabetes~., data=PimaIndiansDiabetes)
+fit
+```
+
+- Linear Discriminant Analysis; caret
+```{r}
+set.seed(7)
+fitControl <- trainControl(method = "cv", number = 5)
+fitLda <- train(diabetes~., data=PimaIndiansDiabetes,
+                method = "lda", metric = "Accuracy",
+                preProcess = c("center", "scale"), trControl = fitControl)
+fitLda
+```
+
+- Regularized Regression; package and function
+        - the glmnet() function is in the glmnet package; can be used for classification
+        or regression
+        - Classification Example:
+        
+```{r}
+library(glmnet)
+x <- as.matrix(PimaIndiansDiabetes[,1:8])
+y <- as.matrix(PimaIndiansDiabetes[,9])
+
+fit <- glmnet(x, y, family = "binomial", alpha = 0.5, lambda = 0.001)
+fit
+```
+```{r}
+predictions <- predict(fit, x, type="class")
+table(predictions, PimaIndiansDiabetes$diabetes)
+```
+
+                - Regression example
+```{r}
+library(glmnet)
+data("BostonHousing")
+BostonHousing$chas <- as.numeric(as.character(BostonHousing$chas))
+
+x <- as.matrix(BostonHousing[,1:13])
+y <- as.matrix(BostonHousing[,14])
+fit <- glmnet(x, y, family = "gaussian", alpha = 0.5, lambda = 0.001)
+fit
+```
+```{r}
+predictions <- predict(fit, x, type = "link")
+mse <- mean((y-predictions)^2)
+mse
+```
+
