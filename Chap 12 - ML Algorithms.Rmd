@@ -69,7 +69,12 @@ fitGlm <- train(diabetes~., data=PimaIndiansDiabetes,
 fitGlm
 ```
 
+
+
+
+
 - Linear Discriminant Analysis (LDA); package and function
+
 ```{r}
 library(MASS)
 library(mlbench)
@@ -78,6 +83,11 @@ data("PimaIndiansDiabetes")
 fit <- lda(diabetes~., data=PimaIndiansDiabetes)
 fit
 ```
+
+
+
+
+
 
 - Linear Discriminant Analysis; caret
 ```{r}
@@ -92,7 +102,9 @@ fitLda
 - Regularized Regression; package and function
         - the glmnet() function is in the glmnet package; can be used for classification
         or regression
-        - Classification Example:
+        
+        
+- Regularized Regression: Classification Example:
         
 ```{r}
 library(glmnet)
@@ -107,7 +119,7 @@ predictions <- predict(fit, x, type="class")
 table(predictions, PimaIndiansDiabetes$diabetes)
 ```
 
-                - Regression example
+- Regularized Regrssion: Regression example
 ```{r}
 library(glmnet)
 data("BostonHousing")
@@ -122,5 +134,51 @@ fit
 predictions <- predict(fit, x, type = "link")
 mse <- mean((y-predictions)^2)
 mse
+```
+
+
+
+- Regularized Regression: Classification with Caret
+
+```{r}
+library(glmnet)
+data("PimaIndiansDiabetes")
+set.seed(7)
+fitControl <- trainControl(method = "cv", number = 5)
+fitGlmnet <- train(diabetes~., data = PimaIndiansDiabetes,
+                   method = "glmnet", metric = "Accuracy",
+                   preProcess = c("center", "scale"), trControl = fitControl)
+fitGlmnet
+```
+
+- Regularized Regression: regression with caret and glmnet
+
+```{r}
+library(mlbench)
+library(glmnet)
+data("BostonHousing")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitGlmnet <- train(medv~., data = BostonHousing,
+                   method = "glmnet", metric = "RMSE",
+                   preProcess = c("center", "scale"), trControl = fitControl)
+fitGlmnet
+
+```
+
+- Regularized Regression: Regression Example with Caret & glmnet
+
+```{r}
+library(mlbench)
+library(glmnet)
+data("BostonHousing")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitGlmnet <- train(medv ~., data = BostonHousing,
+                   method = "glmnet", metric = "RMSE",
+                   preProcess = c("center", "scale"), trControl = fitControl)
+fitGlmnet
 ```
 
