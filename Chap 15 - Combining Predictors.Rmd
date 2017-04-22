@@ -1,0 +1,48 @@
+---
+title: "ML Mastery with R - Chap 15"
+output: html_notebook
+---
+
+*Combine Predictions from Multiple Machine Learning Models*
+- Ensemble prediction can give you a boost in accuracy on your dataset
+- It can take time to find well performing machine learning algorithm for data set due to the trial and error nature of applied machine learning
+- 3 most popular methods for combining the predictions from different models are:
+        - Bagging: building multiple models (typically of same type) from different
+        subsample of training dataset
+        - Boosting: building multiple models (typically models of same type) each of which
+        learns to fix the prediction errors of a prior model in the chain
+        - Stacking: Building multiple models (typically models of differing types) and a
+        supervised model that learns how to best combine the predictionss of the primary 
+        models
+
+*Test Dataset*
+- Ionosphere data set
+```{r}
+library(mlbench)
+library(caret)
+library(caretEnsemble)
+
+data("Ionosphere")
+dataset <- Ionosphere
+dataset <- dataset[,-2]
+dataset <- as.numeric(as.character(dataset$V1))
+```
+
+*Boosting*
+- With C5.0 and Stochastic Gradient Boosting
+```{r}
+fitControl <- trainControl(method= "repeatedcv", number = 10, repeats = 3)
+seed <- 7
+metric <- "Accuracy"
+set.seed(seed)
+fitC50 <- train(Class~., data=dataset,
+                method = "C5.0", metric=metric,
+                trControl = fitControl)
+set.seed(seed)
+fitGbm <- train(Class~., data=dataset,
+                method = "gbm", metric=metric,
+                trControl = fitControl, verbose = FALSE)
+boostingResults <- resamples(list(c5.0=fitC50, gbm=fitGbm))
+summary(boostingResults)
+```
+
