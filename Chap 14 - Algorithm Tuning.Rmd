@@ -1,0 +1,148 @@
+---
+title: "ML Mastery with R - Chap 14"
+output: html_notebook
+---
+
+Tuning Machine Learning Algorithms
+
+Test Data Set with baseline for comparison using mtry=sqrt(ncol(x)) and ntree=500
+
+```{r}
+library(randomForest)
+library(mlbench)
+library(caret)
+data("Sonar")
+dataset <- Sonar
+x <- dataset[,1:60]
+y <- dataset[,61]
+
+#Using random forest as subject of tuning algorithm
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats= 3)
+seed <- 7
+metric <- "Accuracy"
+set.seed(seed)
+mtry <- sqrt(ncol(x))
+tuneGrid <- expand.grid(.mtry=mtry)
+
+rfDefault <- train(Class~., data=dataset, method = "rf",
+                   metric = metric, tuneGrid = tuneGrid,
+                   trControl = fitControl)
+rfDefault
+```
+
+*Tuning Using Caret*
+- One search strategy is to use random values in range to find mtry
+- This can be good if you are unsure of what the value might be and want to overcome any biases you may have for setting the parameter (like suggested equation above)
+- Random search example:
+```{r}
+fitControl <- trainControl(method="repeatedcv", number = 10, repeats =3, search = "random")
+set.seed(seed)
+mtry <- sqrt(ncol(x))
+rfRandom <- train(Class~., data = dataset, method = "rf", metric = metric, tuneLength = 15,
+                  trControl = fitControl)
+rfRandom
+```
+```{r}
+plot(rfRandom)
+```
+
+- Grid Search
+        - Can define a grid to search for parameters to try
+        - Each axis of the grid is an algorithm parameter and points in the grid are 
+        specific combinations of parameters
+        - Becauase you only tune one parameter, grid search is linear search through a 
+        vector of candidate values
+        
+```{r}
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3,
+                           search = "grid")
+set.seed(7)
+tuneGrid <- expand.grid(.mtry = c(1:15))
+rfGrid <- train(Class~., data=dataset, method="rf", metric = metric, tuneGrid = tuneGrid,
+                trControl = fitControl)
+rfGrid
+```
+```{r}
+plot(rfGrid)
+```
+
+*Tune using Algorithm Tools*
+- Some algorithm implementations provide tools for tuning the parameters of algorithm
+
+```{r}
+set.seed(seed)
+bestmtry <- tuneRF(x,y, stepFactor = 1.5, improve = 1e-5, netree=500)
+bestmtry
+```
+
+*Craft Your Own Parameter Search*
+- Often you want to search for both parameters that must be tuned (handled by caret) and those need to be scaled or adapted more generally for your dataset
+- Two popular remondations to do this:
+        - Tune Manually: write R code to create lots of models and compare accuracy
+        - Extend Caret: Create an extension to caret that adds in additional parameters 
+        to caret for the algorithm you want to tune
+        
+- Tune Manually
+        - Create many caret models for algorithm to pass; different values for ntree while
+        holding mtry constant
+```{r}
+fitControl <- trainControl(method= "repeatedcv", number=10, repeats=3, search = "grid")
+tuneGrid <- expand.grid(.mtry=c(sqrt(ncol(x))))
+modellist <- list()
+for(ntree in c(1000,1500,2000,2500)){
+        set.seed(seed)
+        fit <- train(Class~., data=dataset, 
+                     method = "rf", metric= metric,
+                     tunGrid = tuneGrid, trControl = fitControl, ntree=ntree)
+        key <- toString(ntree)
+        modellist[[key]] <- fit
+}
+results <- resamples(modellist)
+summary(results)
+
+```
+```{r}
+scales <- list(x = list(relation = "free"), y = list(relation = "free"))
+dotplot(results, scales = scales)
+```
+
+- Extend Caret
+        - Modify Random Forest to support tuning of multiple parameters
+        - Risk with this approach is that the caret native support for the algoithm has
+        additional or fancy code wrapping it that subtly but importantly changes its 
+        behavior; may need to repeat prior experiements with custom algorithm support
+        
+        - You can define own algorithm to use in caret by defining a list that contains
+        a number of custom named elements that teh caret package will look for, such as
+        how to fit and how to predict
+        
+```{r}
+customRF <- list(type="Classification", library="randomForest", loop=NULL)
+customRF$parameters <- data.frame(parameter = c("mtry", "ntree"), 
+                                  class=rep("Numeric", 2),
+                                  label=c("mtry", "ntree"))
+customRF$grid <- function(x,y,len=NULL, search = "grid"){}
+customRF$fit <- function(x,y, wts, param, lev, last, weights, classProbs, ...){
+        randomForest(x,y, mtry = param$mtry, ntree = param$ntree,...)}
+customRF$predict <- function(modelFit, newdata, preProc=NULL, submodels=NULL)
+        predict(modelFit, newdata)
+customRF$prob <- function(modelFit, newdata, preProc=NULL, submodels=NULL)
+        predict(modelFit, newdata, type="prob")
+customRF$sort <- function(x) x[order(x[,1]),]
+customRF$levels <- function(x) x$classes 
+
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+tuneGrid <- expand.grid(.mtry=c(1:15), .ntree=c(1000,1500,2000,2500))
+set.seed(seed)
+custom <- train(Class~., data=dataset, 
+                method=customRF, metric=metric, 
+                tuneGrid = tuneGrid, trControl = fitControl)
+custom
+
+
+        
+```
+```{r}
+plot(custom)
+```
+
