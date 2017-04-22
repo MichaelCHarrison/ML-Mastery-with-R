@@ -1,0 +1,144 @@
+---
+title: "ML Mastery with R"
+output: html_notebook
+---
+
+Spot-Check Machine Learning Algorithms
+
+*Non Linear Algorithms*
+
+- These algorithms make fewer assumptions about the underlying function being modeled
+- Have higher variance but often result in higher accuracy
+- increased flexibility makes them slower to train or increase memory requirements
+
+*k Nearest Neighbors*
+- the knn3() function in the caret package does not create a model
+        - makes predictions from the training data set directly
+        - can be used for classification or regression
+        
+- K nearest Neighbors: Classification Example with knn3
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fit <- knn3(diabetes~., data = PimaIndiansDiabetes, k=3)
+fit
+```
+```{r}
+predictions <- predict(fit, PimaIndiansDiabetes[,1:8], type = "class")
+table(predictions, PimaIndiansDiabetes$diabetes)
+```
+
+- K nearest Neighbors: Regression Example with knnreg 
+
+```{r}
+library(caret)
+library(mlbench)
+data("BostonHousing")
+
+BostonHousing$chas <- as.numeric(as.character(BostonHousing$chas))
+x <- as.matrix(BostonHousing[,1:13])
+y <- as.matrix(BostonHousing[,14])
+
+fit <- knnreg(x, y, k = 3)
+fit
+```
+```{r}
+predictions <- predict(fit, x)
+mse <- mean((BostonHousing$medv = predictions)^2)
+mse
+
+```
+
+- knn3 with Caret: Classification example
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+set.seed(7)
+fitControl <- trainControl(method = "cv", number = 5)
+fitKnn <- train(diabetes~., data = PimaIndiansDiabetes,
+                method = "knn", metric = "Accuracy", 
+                preProcess = c("center", "scale"), trControl = fitControl)
+fitKnn
+```
+
+
+- knn3 with Caret: Regression Example
+```{r}
+library(caret)
+library(mlbench)
+data("BostonHousing")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitKnn <- train(medv~., data = BostonHousing,
+                method = "knn", metric = "RMSE",
+                preProcess = c("center", "scale"), trControl = fitControl)
+fitKnn
+```
+
+
+*Naive Bayes*
+- naiveBayes() is in the e1071 package 
+- models the probabilites of each attribute to the outcome variable independently
+        - can be used for classification
+```{r}
+library(e1071)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fit <- naiveBayes(diabetes~., data = PimaIndiansDiabetes)
+fit
+```
+```{r}
+predictions <- predict(fit, PimaIndiansDiabetes[,1:8])
+predTable <- table(predictions, PimaIndiansDiabetes$diabetes)
+sum(diag(predTable))/sum(predTable)
+```
+
+
+
+
+
+- NaiveBayes() from klaR with caret; classification example
+```{r, warning=FALSE}
+library(klaR)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitNB <- train(diabetes~., data=PimaIndiansDiabetes,
+               method = "nb", metric = "Accuracy",
+               trControl = fitControl)
+fitNB
+```
+
+
+*Support Vector Machines*
+- the ksvm() function is in the kernlab package
+- can be used for classifcation or regression
+- it is a wrapped for the LIBSVM sowfawre package and provies a suite of kernel types and configuration options; examples use Radial Bias kernel
+
+-SVM Classification example
+```{r}
+library(kernlab)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fit <- ksvm(diabetes~., data = PimaIndiansDiabetes, kernel = "rbfdot")
+predictions <- predict(fit, PimaIndiansDiabetes[,1:8], type = "response")
+tableKsvm <- table(predictions, PimaIndiansDiabetes$diabetes)
+#Accuracy from table
+sum(diag(tableKsvm))/sum(tableKsvm)
+
+```
+
+-SVM Regression example
+```{r}
+
+```
+
