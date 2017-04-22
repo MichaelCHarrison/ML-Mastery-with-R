@@ -1,0 +1,46 @@
+---
+title: "ML Mastery with R - Chap 13"
+output: html_notebook
+---
+
+Comparing the Performance of ML Algorithms
+
+```{r}
+library(mlbench)
+library(caret)
+data("PimaIndiansDiabetes")
+
+seed <- 7
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+
+set.seed(seed)
+fitCart <- train(diabetes~., data = PimaIndiansDiabetes,
+                 method = "rpart", trControl = fitControl) 
+set.seed(seed)
+fitLda <- train(diabetes~., data = PimaIndiansDiabetes,
+                method = "lda", trControl = fitControl) 
+set.seed(seed)
+fitSVM <- train(diabetes~., data = PimaIndiansDiabetes,
+                method = "svmRadial", trControl = fitControl) 
+set.seed(seed)
+fitKnn <- train(diabetes~., data = PimaIndiansDiabetes,
+                method = "knn", trControl = fitControl) 
+set.seed(seed)
+fitRf <- train(diabetes~., data = PimaIndiansDiabetes,
+               method = "rf", trControl = fitControl)
+
+results <- resamples(list(CART=fitCart,
+                          LDA = fitLda,
+                          SVM = fitSVM,
+                          KNN = fitKnn,
+                          RF = fitRf))
+summary(results)
+```
+
+*Visualize the Results*
+
+```{r}
+scales <- list(x = list(relation = "free"), y = list(relation = "free"))
+bwplot(results, scales = scales)
+```
+
