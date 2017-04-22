@@ -39,8 +39,81 @@ summary(results)
 
 *Visualize the Results*
 
+-Box and Whisker Plots
 ```{r}
 scales <- list(x = list(relation = "free"), y = list(relation = "free"))
 bwplot(results, scales = scales)
+```
+
+- Density Plot Comparing Algorithm Accuracy
+        - useful way to evaluate overlap in estimated behavior of algorithms
+```{r}
+scales <- list(x = list(relation="free"), y = list(relation="free"))
+densityplot(results, scales=scales, pch = "|")
+```
+
+- Dot Plots
+        - Useful plots showing both mean estimated accuracy as well as the 95% confidnce 
+        interval
+```{r}
+scales <- list(x = list(relation= "free"), y = list(relation="free"))
+dotplot(results, scales=scales)
+```
+
+- Parallel Plots
+        - Shows how eac trial of each cross-validation fold behave for each algorithm 
+        tested
+        - can help you see how hold-out subsets that were difficult for one algortih 
+        affected other algorithms
+        - This can be a tricky plot to interpret
+        - helpful in thinking about how different methods could be combined in an ensemble 
+        prediction at a later time, especially if you see correlated movements in opposite
+        directions
+```{r}
+parallelplot(results)
+```
+
+
+-Scatterplot Matrix
+        - Creates scatter plot matrix of all fold-tril results for an algorithm compared
+        to same fold-trial results for all other algorithms
+        - Invaluable when considering whether the predictions from two different algorithms
+        are correlated
+                - If WEAKLY correlated, they are good candidates for being combined in
+                an ensemble prediciton
+        - In example, LDA and SVM are strongly correlated, as does SVM and RF;
+        SVM and CART look weakly correlated
+        
+```{r}
+splom(results)
+```
+
+
+- Pairwise xyPlots
+        - You can zoom in on one pairwise comparison of accuracy for two machine learning
+        algorithsm
+```{r}
+xyplot(results, models = c("CART", "LDA"))
+```
+```{r}
+xyplot(results, models = c("CART", "SVM"))
+```
+
+-Statistical Significance
+        - Calculate significance of the differences between metric distributions of 
+        different ML algorithms
+        - Lower diagonal of table shows p-values for the null hypothesis (distributions
+        are the same); lower p-values are better
+        - Upper diagonal of table shows the estimate difference between distributions
+                - If we think LDA is most accurate model from looking at previous graphs
+                we can get estimate of how much better than specific models in terms of
+                absolute accuracy; these scores can help with any accuracy claims you 
+                might want to make between specific algorithms
+        - Good tip to increase number of trials to increase the size of the populations
+        and perhaps result in more precise p-values
+        
+```{r}
+diffs <- diff(results)
+summary(diffs)
 ```
 
