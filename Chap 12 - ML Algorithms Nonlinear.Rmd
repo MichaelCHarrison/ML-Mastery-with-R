@@ -139,6 +139,108 @@ sum(diag(tableKsvm))/sum(tableKsvm)
 
 -SVM Regression example
 ```{r}
+library(kernlab)
+library(mlbench)
+data("BostonHousing")
 
+fit <- ksvm(medv~., BostonHousing, kernel = "rbfdot")
+predictions <- predict(fit, BostonHousing)
+mse <- mean((BostonHousing$medv - predictions)^2)
+mse
+```
+```{r}
+sqrt(mse)
+```
+
+
+-SVM with Caret; Radial Basis Kernel, classification example
+
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+set.seed(7)
+fitControl <- trainControl(method = "cv", number = 5)
+fitSVM <- train(diabetes~., data = PimaIndiansDiabetes,
+                method = "svmRadial", metric = "Accuracy",
+                trControl = fitControl)
+fitSVM
+```
+
+- SVM with Radial Basis; regression example
+
+```{r}
+library(caret)
+library(mlbench)
+data("BostonHousing")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitSVMRadial <- train(medv~., data = BostonHousing,
+                      method = "svmRadial", metric = "RMSE",
+                      trControl = fitControl)
+fitSVMRadial
+```
+
+*Classification and Regression Tree*
+
+-Classification tree Example with rpart
+
+```{r}
+library(rpart)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fit <- rpart(diabetes~., data = PimaIndiansDiabetes)
+fit
+```
+```{r}
+predictions <- predict(fit, PimaIndiansDiabetes[,1:8], type = "class")
+predTable <- table(predictions, PimaIndiansDiabetes$diabetes)
+sum(diag(predTable))/sum(predTable)
+```
+
+- Regression tree example
+```{r}
+library(rpart)
+library(mlbench)
+data("BostonHousing")
+
+fit <- rpart(medv~., data = BostonHousing, control = rpart.control(minsplit = 5))
+fit
+```
+```{r}
+predictions <- predict(fit, BostonHousing[,1:13])
+rmse <- sqrt(mean((BostonHousing$medv - predictions)^2))
+rmse
+```
+
+- rpart Classification tree with caret
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitRpart <- train(diabetes~., data = PimaIndiansDiabetes,
+                  method = "rpart", metric = "Accuracy",
+                  trControl = fitControl)
+fitRpart
+```
+
+- rpart regression tree with rpart and caret
+```{r}
+library(rpart)
+library(mlbench)
+data("BostonHousing")
+
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(7)
+fitRpart <- train(medv~., data = BostonHousing,
+                  method = "rpart", metric = "RMSE",
+                  trControl = fitControl)
+fitRpart
 ```
 
