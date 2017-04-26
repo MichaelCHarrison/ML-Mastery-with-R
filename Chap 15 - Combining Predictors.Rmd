@@ -45,4 +45,77 @@ fitGbm <- train(Class~., data=dataset,
 boostingResults <- resamples(list(c5.0=fitC50, gbm=fitGbm))
 summary(boostingResults)
 ```
+```{r}
+dotplot(boostingResults)
+```
+
+*Bagging Algorithms*
+
+- Bagged CART
+        - Has paramters that are not tuned in this example
+        
+```{r}
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+seed <- 7
+metric <- "Accuracy"
+#Bagged CART
+set.seed(seed)
+fitTreebag <- train(Class~., data = dataset, 
+                    method = "treebag", metric = metric,
+                    trControl = fitControl)
+#Random Forest
+set.seed(seed)
+fitRf <- train(Class~., data = dataset, 
+               method = "rf", metric = metric, 
+               trControl = fitControl)
+#summarize results
+baggingResults <- resamples(list(treebag = fitTreebag, randomforest = fitRf))
+summary(baggingResults)
+```
+```{r}
+dotplot(baggingResults)
+```
+
+*Stacking Algorithms*
+- You can combine the predictions of multiple caret models using the caretEnsemble package
+- Given a list of caret models, the careStack() function can be used to specify a higher-order model to learn how to best combine together the predictions of submodels
+
+```{r}
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3,
+                           savePredictions = TRUE, classProbs = TRUE)
+algorithmList <- c("lda", "rpart", "glm", "knn", "svmRadial")
+set.seed(seed)
+models <- caretList(Class~., data=dataset, trControl = fitControl, 
+                    methodList = algorithmList)
+results <- resamples(models)
+summary(results)
+```
+```{r}
+dotplot(results)
+```
+- Check the correlation between algorithms
+```{r}
+modelCor(results)
+```
+```{r}
+splom(results)
+```
+
+- Combining the predictions of the classifiers using simple linear model
+```{r}
+stackControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3,
+                             savePredictions = TRUE, classProbs = TRUE)
+set.seed(seed)
+stackGlm <- caretStack(models, method = "glm", metric = "Accuracy", 
+                       trControl = stackControl)
+stackGlm
+```
+
+- Stacking with randomForest
+```{r}
+set.seed(seed)
+stackRf <- caretStack(models, method = "rf", metric = "Accuracy",
+                      trControl = stackControl)
+stackRf
+```
 
