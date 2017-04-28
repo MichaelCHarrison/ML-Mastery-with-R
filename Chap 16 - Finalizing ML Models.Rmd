@@ -66,3 +66,25 @@ finalPredictions <- predict(finalModel, validation[,1:60])
 confusionMatrix(finalPredictions, validation$Class)
 ```
 
+*Save and Load your Model*
+```{r}
+library(caret)
+library(mlbench)
+library(randomForest)
+data(Sonar)
+set.seed(7)
+inTrain <- createDataPartition(Sonar$Class, p=.8, list=FALSE)
+validation <- Sonar[-inTrain,]
+testing <- Sonar[inTrain,]
+#create final standalone model
+set.seed(7)
+finalModel <- randomForest(Class~., training, mtry=2, ntree=500)
+
+#T0 LOAD THE MODEL
+#saveRDS(finalModel, "./finalModel.rds")
+#TO LOAD THE MODEL
+#supermodel <- readRDS("./finalModel.rds")
+#finalPredictions <- predict(supermodel, validation[,1:60])
+#confustionMatrix(finalPredictions, validation$Class)
+```
+
