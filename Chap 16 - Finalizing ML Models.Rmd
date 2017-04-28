@@ -1,0 +1,68 @@
+---
+title: "ML Master with R - Chap 16"
+output: html_notebook
+---
+
+Finalizing your Machine Learning Model
+
+1. Making new predictions on unseen data
+2. Creating a standalone model using all training data
+3. Saving your model to file for later loading and making predictions on new data
+
+*Make predictions on new data*
+
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes")
+
+set.seed(9)
+inTrain <- createDataPartition(PimaIndiansDiabetes$diabetes, p=0.80, list=FALSE)
+validation <- PimaIndiansDiabetes[-inTrain,]
+training <- PimaIndiansDiabetes[inTrain,]
+#train model and summarize
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+fitLda <- train(diabetes~., data = training, method = "lda", metric = "Accuracy",
+                trControl = fitControl)
+fitLda
+```
+```{r}
+fitLda$finalModel
+```
+
+```{r}
+set.seed(9)
+predictions <- predict(fitLda, validation)
+confusionMatrix(predictions, validation$diabetes)
+```
+
+*Creating a standalone model*
+- using random forest 
+```{r}
+library(caret)
+library(mlbench)
+library(randomForest)
+#load dataset
+data(Sonar)
+set.seed(7)
+#partition data
+inTrain <- createDataPartition(Sonar$Class, p=0.80, list=FALSE)
+validation <- Sonar[-inTrain,]
+training <- Sonar[inTrain,]
+#train model
+set.seed(7)
+fitControl <- trainControl(method="repeatedcv", number = 10, repeats=3)
+fitRf <- train(Class~., data =training, method = "rf", metric = "Accuracy",
+               trControl = fitControl)
+fitRf
+```
+```{r}
+fitRf$finalModel
+```
+```{r}
+set.seed(9)
+finalModel <- randomForest(Class~., training, mtry = 2, ntree=500)
+finalPredictions <- predict(finalModel, validation[,1:60])
+confusionMatrix(finalPredictions, validation$Class)
+```
+
